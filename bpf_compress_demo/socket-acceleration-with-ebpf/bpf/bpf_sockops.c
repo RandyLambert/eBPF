@@ -1,5 +1,6 @@
 #include <linux/bpf.h>
-
+#include <bpf/bpf_endian.h>
+#include <bpf/bpf_helpers.h>
 #include "bpf_sockops.h"
 
 /*
@@ -27,19 +28,22 @@ void bpf_sock_ops_ipv4(struct bpf_sock_ops *skops)
 {
     struct sock_key key = {};
     int ret;
+    if(bpf_ntohl(skops->remote_port) == 1234 || skops->local_port == 1234) {
+        printk("recv mesg!!!! sockmap: op %d, port %d --> %d\n",
+            skops->op, skops->local_port, bpf_ntohl(skops->remote_port));
+        extract_key4_from_ops(skops, &key);
 
-    extract_key4_from_ops(skops, &key);
-
-    ret = sock_hash_update(skops, &sock_ops_map, &key, BPF_NOEXIST);
-    if (ret != 0) {
-        printk("sock_hash_update() failed, ret: %d\n", ret);
+        ret = bpf_sock_hash_update(skops, &sock_ops_map, &key, BPF_NOEXIST);
+        if (ret != 0) {
+            printk("bpf_sock_hash_update() failed, ret: %d\n", ret);
+        }
     }
 
-    printk("sockmap: op %d, port %d --> %d\n",
-            skops->op, skops->local_port, bpf_ntohl(skops->remote_port));
+    // printk("sockmap: op %d, port %d --> %d\n",
+    //         skops->op, skops->local_port, bpf_ntohl(skops->remote_port));
 }
 
-__section("sockops")
+SEC("sockops")
 int bpf_sockmap(struct bpf_sock_ops *skops)
 {
     switch (skops->op) {
@@ -58,5 +62,5 @@ int bpf_sockmap(struct bpf_sock_ops *skops)
     return 0;
 }
 
-char ____license[] __section("license") = "GPL";
-int _version __section("version") = 1;
+char ____license[] SEC("license") = "GPL";
+int _version SEC("version") = 1;

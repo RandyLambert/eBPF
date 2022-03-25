@@ -2,7 +2,7 @@
 set -x
 
 # Detach and unload the bpf_redir program
-sudo bpftool prog detach pinned /sys/fs/bpf/bpf_redir msg_verdict pinned /sys/fs/bpf/sock_ops_map
+sudo bpftool prog detach pinned /sys/fs/bpf/bpf_redir stream_verdict pinned /sys/fs/bpf/sock_ops_map
 sudo rm /sys/fs/bpf/bpf_redir
 
 # Detach and unload the bpf_sockops_v4 program

@@ -55,3 +55,6 @@ user
 client
 server
 .vscode/
+.vagrant/
+*.log
+linux-observability-with-BPF/code/chapter-2/hello_world/monitor-exec

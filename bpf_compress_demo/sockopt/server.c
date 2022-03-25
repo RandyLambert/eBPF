@@ -18,6 +18,7 @@
 char kmsg[64]; 
 
 int main(){
+	printf("%d\n",getpid());
     //创建套接字
     int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     //将套接字和IP、端口绑定
@@ -36,15 +37,21 @@ int main(){
 
     int len = sizeof(char)*64; 
     // call function send_msg() 获取 sock 信息 
-    int ret = getsockopt(clnt_sock, IPPROTO_IP, IP_OPTIONS, kmsg, &len);
-    printf("getsockopt: ret = %d. msg = %s\n", ret, kmsg);
-    if (ret != 0)
-    {   
-        printf("getsockopt error: errno = %d, errstr = %s\n", errno, strerror(errno));
-    }   
-    //向客户端发送数据
-    char str[] = "Hello World!";
-    write(clnt_sock, str, sizeof(str));
+    // int ret = getsockopt(clnt_sock, IPPROTO_IP, IP_OPTIONS, kmsg, &len);
+    // printf("getsockopt: ret = %d. msg = %s\n", ret, kmsg);
+    // if (ret != 0)
+    // {   
+    //     printf("getsockopt error: errno = %d, errstr = %s\n", errno, strerror(errno));
+    // }   
+    while (1)
+    {
+        //向客户端发送数据
+        char str[] = "Hello World!!!!!!!!!!!!!!!!!!!!!";
+        write(clnt_sock, str, sizeof(str));
+        sleep(5);
+    }
+    
+
    
     //关闭套接字
     close(clnt_sock);

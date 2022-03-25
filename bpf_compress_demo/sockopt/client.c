@@ -19,9 +19,9 @@ int main(){
     //创建套接字
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     // 设置 sockopt
-    int ret = setsockopt(sock, IPPROTO_TCP, 253, UMSG, UMSG_LEN);
-    perror("error setting");
-    printf("setsockopt: ret = %d. msg = %s\n", ret, UMSG);
+    // int ret = setsockopt(sock, IPPROTO_TCP, 253, UMSG, UMSG_LEN);
+    // perror("error setting");
+    // printf("setsockopt: ret = %d. msg = %s\n", ret, UMSG);
     // ret = getsockopt(sock, IPPROTO_IP, IP_OPTIONS, kmsg, &len);
     // printf("setsockopt: ret = %d. msg = %s\n", ret, kmsg);
 
@@ -34,12 +34,15 @@ int main(){
     serv_addr.sin_port = htons(1234);  //端口
     connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
    
-    //读取服务器传回的数据
-    char buffer[40];
-    read(sock, buffer, sizeof(buffer)-1);
-   
-    printf("Message form server: %s\n", buffer);
-   
+    while(1) {
+        //读取服务器传回的数据
+        char buffer[40];
+        read(sock, buffer, sizeof(buffer)-1);
+    
+        printf("Message form server: %s\n", buffer);
+        // sleep(5);
+    }
+
     //关闭套接字
     close(sock);
     return 0;
