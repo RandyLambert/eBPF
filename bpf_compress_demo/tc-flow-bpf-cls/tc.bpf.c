@@ -46,7 +46,7 @@ typedef __uint16_t uint16_t;
 typedef __uint32_t uint32_t;
 typedef __uint64_t uint64_t;
 
-SEC("classifier")
+SEC("tc/is_http")
 static inline int classification(struct __sk_buff *skb) {
   void *data_end = (void *)(long)skb->data_end;
   void *data = (void *)(long)skb->data;
@@ -64,10 +64,10 @@ static inline int classification(struct __sk_buff *skb) {
 
   if (h_proto == bpf_htons(ETH_P_IP)) {
     if (is_http(skb, nh_off) == 1) {
-      int ret = bpf_skb_pull_data(skb, 0);
+      // int ret = bpf_skb_pull_data(skb, 0);
 
       // *(char *)(skb->data + 41) = 'x';
-      trace_printk("Yes! It is HTTP! %d, %s\n",data_end - data);
+      trace_printk("Yes! It is HTTP!\n");
     }
   }
 
@@ -115,14 +115,14 @@ static inline int is_http(struct __sk_buff *skb, __u64 nh_off) {
     for (i = 0; i < 7; i++) {
 
       p[i] = load_byte(skb, poffset + i);
+      // bpf_trace_printk("%c",p[i]);
     }
     int *value;
-    if ((p[0] == 'H') && (p[1] == 'T') && (p[2] == 'T') && (p[3] == 'P')) {
+    // bpf_trace_printk("%d\n", plength);
+    if ((p[0] == 'H') && (p[1] == 'E') && (p[2] == 'L') && (p[3] == 'L')) {
       return 1;
     }
   }
 
   return 0;
 }
-
-char _license[] SEC("license") = "GPL";

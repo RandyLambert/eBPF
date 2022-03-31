@@ -25,4 +25,4 @@ sudo bpftool map pin id $MAP_ID /sys/fs/bpf/sock_ops_map
 clang -std=gnu89 -O2 -Wall -target bpf -c bpf_redir.c -o bpf_redir.o
 
 sudo bpftool prog load bpf_redir.o /sys/fs/bpf/bpf_redir map name sock_ops_map pinned /sys/fs/bpf/sock_ops_map
-sudo bpftool prog attach pinned /sys/fs/bpf/bpf_redir msg_verdict pinned /sys/fs/bpf/sock_ops_map
+sudo bpftool prog attach pinned /sys/fs/bpf/bpf_redir flow_dissector pinned /sys/fs/bpf/sock_ops_map

@@ -7,24 +7,8 @@
 #include <linux/ip.h>
 #include <linux/pkt_cls.h>
 #include <linux/tcp.h>
-
-#define SEC(NAME) __attribute__((section(NAME), used))
-
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define __bpf_htons(x) __builtin_bswap16(x)
-#define __bpf_constant_htons(x) ___constant_swab16(x)
-#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define __bpf_htons(x) (x)
-#define __bpf_constant_htons(x) (x)
-#else
-#error "Fix your compiler's __BYTE_ORDER__?!"
-#endif
-
-#define bpf_htons(x) \
-  (__builtin_constant_p(x) ? __bpf_constant_htons(x) : __bpf_htons(x))
-
-static int (*bpf_trace_printk)(const char *fmt, int fmt_size,
-                               ...) = (void *)BPF_FUNC_trace_printk;
+#include <bpf/bpf_helpers.h>
+#include <bpf/bpf_endian.h>
 
 #define trace_printk(fmt, ...)                                                 \
   do {                                                                         \
@@ -64,10 +48,10 @@ static inline int classification(struct __sk_buff *skb) {
 
   if (h_proto == bpf_htons(ETH_P_IP)) {
     if (is_http(skb, nh_off) == 1) {
-      int ret = bpf_skb_pull_data(skb, 0);
+      // int ret = bpf_skb_pull_data(skb, 0);
 
       // *(char *)(skb->data + 41) = 'x';
-      trace_printk("Yes! It is HTTP! %d, %s\n",data_end - data);
+      trace_printk("Yes! It is Hello World!\n");
     }
   }
 
@@ -110,14 +94,28 @@ static inline int is_http(struct __sk_buff *skb, __u64 nh_off) {
   poffset = ETH_HLEN + ip_hlen + tcp_hlen;
   plength = ip_total_length - ip_hlen - tcp_hlen;
   if (plength >= 7) {
-    unsigned long p[7];
+    char p[7] = {0};
     int i = 0;
-    for (i = 0; i < 7; i++) {
-
-      p[i] = load_byte(skb, poffset + i);
+    int ret = bpf_skb_load_bytes(skb, poffset, p, 6);
+    	if (ret) {
+			// trace_printk("bpf_skb_load_bytes failed: %d\n", ret);
+			return TC_ACT_OK;
+		}
+    if(p[0] == 'H' && p[1] == 'e'){
+      trace_printk("p = %s,plength = %u, len = %u\n",p, plength, skb->len - poffset);
+      p[4] = 'U';
+      
+      ret = bpf_skb_store_bytes(skb, poffset, p, 6, 0);
+    	if (ret) {
+			trace_printk("bpf_skb_store_bytes failed: %d\n", ret);
+			return TC_ACT_OK;
+		}
     }
+    // for (i = 0; i < 7; i++) {
+    //   p[i] = load_byte(skb, poffset + i);
+    // }
     int *value;
-    if ((p[0] == 'H') && (p[1] == 'T') && (p[2] == 'T') && (p[3] == 'P')) {
+    if ((p[0] == 'H') && (p[1] == 'e') && (p[2] == 'l') && (p[3] == 'l')) {
       return 1;
     }
   }
