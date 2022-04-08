@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
 
 #define SOCKET_OPS_BASE      128
 #define SOCKET_OPS_SET       (SOCKET_OPS_BASE)
@@ -19,8 +23,12 @@ int main(){
     //创建套接字
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     // 设置 sockopt
-    // int ret = setsockopt(sock, IPPROTO_TCP, 253, UMSG, UMSG_LEN);
-    // perror("error setting");
+    int a = 5;
+    int ret = setsockopt(sock, SOL_TCP, TCP_FASTOPEN, &a, sizeof(int));
+    if ret != 0 {
+    perror("error setting");
+
+    }
     // printf("setsockopt: ret = %d. msg = %s\n", ret, UMSG);
     // ret = getsockopt(sock, IPPROTO_IP, IP_OPTIONS, kmsg, &len);
     // printf("setsockopt: ret = %d. msg = %s\n", ret, kmsg);
